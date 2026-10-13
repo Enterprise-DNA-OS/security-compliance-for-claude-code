@@ -1,13 +1,49 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Security Compliance for Claude Code: what needs attention, rendered by npm run view",
+    "title": "Security compliance this week",
+    "subtitle": "Readiness, what needs attention, patches and leavers. Demo data is fictional.",
     "sections": [
       {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "title": "Readiness by framework",
+        "note": "Ready means implemented with current evidence.",
+        "sql": "select name as framework,target_date,days_to_target,applicable,implemented,ready,evidence_gaps,ready_pct from readiness order by target_date nulls last"
+      },
+      {
+        "title": "Patches past their Essential Eight window",
+        "sql": "select name,system,severity,rule,due_on,days_over from patch_status where status='open' and days_over>0 order by days_over desc"
+      },
+      {
+        "title": "Leavers who still have access",
+        "sql": "select person,end_date,system,access_level,days_after_leaving from offboarding where removed_on is null order by days_after_leaving desc"
+      },
+      {
+        "title": "Record checks",
+        "note": "Every rule and its source is in docs/compliance.md.",
+        "sql": "select rule,record,area,finding from compliance_findings order by rule,record"
+      }
+    ]
+  },
+  {
+    "name": "audit-ready",
+    "title": "Audit readiness",
+    "subtitle": "Controls, evidence, risks and the review calendar, for the run-up to an audit.",
+    "sections": [
+      {
+        "title": "Control gaps",
+        "sql": "select control_id,name,owner,status,evidence_state,frameworks from control_status where applicable and (status<>'implemented' or evidence_state in ('none','stale','expiring')) order by control_id"
+      },
+      {
+        "title": "Risk register",
+        "sql": "select name,owner,inherent,treatment,residual,review_on from risk_register where status='open' order by residual desc nulls first,inherent desc"
+      },
+      {
+        "title": "Review calendar",
+        "sql": "select kind,last_held,next_due,days_overdue from review_calendar order by next_due nulls first"
+      },
+      {
+        "title": "Suppliers",
+        "sql": "select name,criticality,data_access,assurance,assurance_until,next_assessment,state from vendor_status order by name"
       }
     ]
   }

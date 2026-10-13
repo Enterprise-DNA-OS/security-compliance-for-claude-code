@@ -1,0 +1,9 @@
+Question
+Do you enforce multi-factor authentication for all staff and administrators?
+How often do you review user access to production systems?
+Do you test restoring from backups?
+Do you perform annual penetration testing?
+Describe your incident response process and how customers are notified of a breach.
+Do you have a documented secure software development lifecycle?
+Do you carry out background checks on new employees?
+Is customer data encrypted at rest in a dedicated quantum vault?

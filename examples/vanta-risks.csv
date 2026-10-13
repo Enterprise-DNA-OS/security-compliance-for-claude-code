@@ -1,0 +1,3 @@
+Risk ID,Risk Scenario,Description,Category,Owner,Likelihood,Impact,Treatment,Treatment Plan,Residual Likelihood,Residual Impact
+R-101,Cloud account takeover,An attacker takes over the production cloud account through a stolen key.,Access,Tom,Medium,Very high,Mitigate,Keys rotated every 90 days and admin access through SSO only.,Low,High
+R-102,Customer data in a support ticket,Customers paste passwords or card numbers into support tickets.,Privacy,Mere,High,Medium,Accept,Redaction guidance for the support team.,High,Medium

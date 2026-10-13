@@ -1,0 +1,6 @@
+{
+  "_": "Point each field at your export's heading when it differs. Only list the fields you need; the rest use the default headings.",
+  "vanta-controls": { "control_id": "Ref", "description": "Requirement text" },
+  "vanta-risks": { "name": "Scenario" },
+  "vanta-people": { "email": "Work email address" }
+}

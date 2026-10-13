@@ -1,11 +1,78 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
+    "name": "statement-of-applicability",
+    "title": "Statement of Applicability",
+    "for_each": "select id,name from frameworks where upper(code)='ISO27001'",
     "file": "name",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      {
+        "title": "Scope",
+        "sql": "select name as framework,auditor,target_date,applicable,excluded,implemented from readiness where id=$1",
+        "note": "Prepared from the control register. The reasons for inclusion come from the linked risks; the reasons for exclusion are recorded on each control."
+      },
+      {
+        "title": "Controls",
+        "sql": "select c.control_id,c.refs,c.name,case when c.applicable then 'Yes' else 'No' end as included,coalesce(c.justification,(select 'Treats: '||string_agg(r.name,'; ' order by r.name) from risks r where r.status='open' and upper(c.control_id)=any(string_to_array(upper(replace(coalesce(r.control_refs,''),' ','')),',')))) as justification,c.status from control_status c join frameworks f on upper(f.code)=any(string_to_array(upper(replace(coalesce(c.frameworks,''),' ','')),',')) where f.id=$1 order by c.control_id"
+      }
+    ]
+  },
+  {
+    "name": "risk-treatment-plan",
+    "title": "Risk treatment plan",
+    "for_each": "select to_char(current_date,'YYYY-MM-DD') as id,'Risk treatment plan '||to_char(current_date,'YYYY-MM-DD') as name",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Open risks",
+        "sql": "select name,owner,inherent,treatment,treatment_plan,control_refs,residual,review_on from risk_register where status='open' and $1::text is not null order by residual desc nulls first,inherent desc",
+        "note": "Residual risk is accepted by each risk owner. Risks with no owner or treatment are listed by /compliance."
+      }
+    ]
+  },
+  {
+    "name": "management-review-pack",
+    "title": "Management review pack",
+    "for_each": "select to_char(current_date,'YYYY-MM') as id,'Management review '||to_char(current_date,'YYYY-MM') as name",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Readiness",
+        "sql": "select name as framework,ready_pct,evidence_gaps,days_to_target from readiness where $1::text is not null order by target_date nulls last"
+      },
+      {
+        "title": "Incidents in the last twelve months",
+        "sql": "select name,found_on,severity,personal_info,serious_harm,status,root_cause from incidents where found_on>=current_date-365 and $1::text is not null order by found_on desc"
+      },
+      {
+        "title": "Open corrective actions",
+        "sql": "select name,owner,source,due_on from actions where status='open' and $1::text is not null order by due_on nulls last"
+      },
+      {
+        "title": "Record checks",
+        "sql": "select rule,record,finding from compliance_findings where $1::text is not null order by rule,record",
+        "note": "Inputs the standard asks a management review to consider include audit results, nonconformities and corrective actions, and risk treatment status. Minute the decisions and record the review with add reviews --kind=management-review."
+      }
+    ]
+  },
+  {
+    "name": "trust-summary",
+    "title": "Security summary for customers",
+    "for_each": "select to_char(current_date,'YYYY-MM-DD') as id,'Security summary '||to_char(current_date,'YYYY-MM-DD') as name",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Frameworks",
+        "sql": "select name as framework,status,certified_until from frameworks where status<>'retired' and $1::text is not null order by name",
+        "note": "Only implemented controls appear below. Review every line before this leaves the business."
+      },
+      {
+        "title": "Controls in place",
+        "sql": "select domain,name,refs from control_status where applicable and status='implemented' and evidence_state in ('current','expiring') and $1::text is not null order by domain,control_id"
+      },
+      {
+        "title": "Testing",
+        "sql": "select kind,last_held from review_calendar where last_held is not null and kind in ('penetration-test','restore-test','internal-audit') and $1::text is not null order by kind"
+      }
     ]
   }
 ]

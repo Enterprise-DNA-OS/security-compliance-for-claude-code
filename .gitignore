@@ -16,3 +16,6 @@ feeds/
 exports/
 imports/
 private-*.json
+
+# Evidence files Claude Code collects with your own read-only tools
+evidence/

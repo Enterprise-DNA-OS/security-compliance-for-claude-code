@@ -1,0 +1,5 @@
+Control ID,Control Name,Control Description,Domain,Owner,Framework Code,Evidence Status
+KC-01,Information security policy,"A security policy approved by the directors, published to staff and reviewed every year.",Governance,Mere,"A.5.1",OK
+KC-21,Asset inventory,"An inventory of laptops, cloud accounts and SaaS systems, with an owner for each.",Asset management,Tom,"A.5.9",Needs attention
+KC-22,Secure development,"Code is reviewed before merge and dependencies are scanned weekly.",Engineering,Ana,"A.8.25, A.8.28",OK
+KC-23,Threat intelligence,"Security advisories for the systems we run are reviewed weekly.",Operations,Tom,"A.5.7",
