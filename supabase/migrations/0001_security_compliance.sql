@@ -92,7 +92,7 @@ end $$;
 -- Each control with the state of its evidence. Evidence counts while collected_on + valid_days is in the future.
 create view control_status as
 with s as (select * from settings where id=1),
-e as (select control_id, count(*) as items, max(collected_on) as last_collected, max(collected_on+coalesce(valid_days,(select evidence_valid_days from s))) as expires_on from evidence group by control_id)
+e as (select control_id, count(*)::int as items, max(collected_on) as last_collected, max(collected_on+coalesce(valid_days,(select evidence_valid_days from s))) as expires_on from evidence group by control_id)
 select c.id, c.control_id, c.name, c.description, c.domain, c.owner, c.frameworks, c.refs, c.status, c.applicable, c.justification, c.last_reviewed_on,
  coalesce(e.items,0) as evidence_items, e.last_collected, e.expires_on,
  case when not c.applicable then 'not applicable' when e.items is null then 'none' when e.expires_on<current_date then 'stale'
@@ -103,11 +103,11 @@ from controls c left join e on e.control_id=c.id;
 -- Readiness per framework: applicable controls that are implemented with current evidence.
 create view readiness as
 select f.id, f.name, f.code, f.status, f.auditor, f.target_date, f.target_date-current_date as days_to_target, f.certified_until,
- count(c.id) filter (where c.applicable) as applicable, count(c.id) filter (where not c.applicable) as excluded,
- count(c.id) filter (where c.applicable and c.status='implemented') as implemented,
- count(c.id) filter (where c.applicable and c.status='implemented' and c.evidence_state in ('current','expiring')) as ready,
- count(c.id) filter (where c.applicable and c.evidence_state in ('none','stale')) as evidence_gaps,
- case when count(c.id) filter (where c.applicable)=0 then null else round(100.0*count(c.id) filter (where c.applicable and c.status='implemented' and c.evidence_state in ('current','expiring'))/count(c.id) filter (where c.applicable)) end as ready_pct
+ count(c.id) filter (where c.applicable)::int as applicable, count(c.id) filter (where not c.applicable)::int as excluded,
+ count(c.id) filter (where c.applicable and c.status='implemented')::int as implemented,
+ count(c.id) filter (where c.applicable and c.status='implemented' and c.evidence_state in ('current','expiring'))::int as ready,
+ count(c.id) filter (where c.applicable and c.evidence_state in ('none','stale'))::int as evidence_gaps,
+ case when count(c.id) filter (where c.applicable)=0 then null else round(100.0*count(c.id) filter (where c.applicable and c.status='implemented' and c.evidence_state in ('current','expiring'))/count(c.id) filter (where c.applicable))::int end as ready_pct
 from frameworks f left join control_status c on upper(f.code)=any(string_to_array(upper(replace(coalesce(c.frameworks,''),' ','')),','))
 group by f.id;
 
@@ -138,8 +138,8 @@ from account_list where end_date is not null and end_date<=current_date
 create view access_review_status as
 select s.id, s.name, s.owner, s.data_class, s.last_access_review_on, s.last_access_review_on+(select access_review_days from settings) as next_review,
  current_date-(s.last_access_review_on+(select access_review_days from settings)) as days_overdue, s.last_access_review_on is null as never_reviewed,
- (select count(*) from accounts a where a.system_id=s.id and a.removed_on is null) as active_accounts,
- (select count(*) from accounts a where a.system_id=s.id and a.removed_on is null and a.access_level='admin') as admins
+ (select count(*)::int from accounts a where a.system_id=s.id and a.removed_on is null) as active_accounts,
+ (select count(*)::int from accounts a where a.system_id=s.id and a.removed_on is null and a.access_level='admin') as admins
 from systems s where s.status='active';
 
 create view vendor_status as
